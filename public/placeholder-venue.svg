@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
+  <rect width="400" height="300" fill="#e2e8f0"/>
+  <path d="M150 180l40-50 35 42 25-30 50 58H110z" fill="#cbd5e1"/>
+  <circle cx="160" cy="110" r="22" fill="#cbd5e1"/>
+  <text x="200" y="250" font-family="Arial" font-size="16" fill="#94a3b8" text-anchor="middle">GC Reviews</text>
+</svg>
