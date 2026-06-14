@@ -2,22 +2,31 @@
 
 import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Category, Location } from "@/lib/types";
 
 export function SearchBar({
   locations,
   categories,
+  defaultQuery,
   defaultLocation,
+  defaultCategory,
 }: {
   locations: Location[];
   categories: Category[];
+  defaultQuery?: string;
   defaultLocation?: string;
+  defaultCategory?: string;
 }) {
   const router = useRouter();
-  const [q, setQ] = useState("");
+  const [q, setQ] = useState(defaultQuery ?? "");
   const [location, setLocation] = useState(defaultLocation ?? "");
-  const [category, setCategory] = useState("");
+  const [category, setCategory] = useState(defaultCategory ?? "");
+
+  // Keep dropdowns in sync when sidebar filters change the URL
+  useEffect(() => { setLocation(defaultLocation ?? ""); }, [defaultLocation]);
+  useEffect(() => { setCategory(defaultCategory ?? ""); }, [defaultCategory]);
+  useEffect(() => { setQ(defaultQuery ?? ""); }, [defaultQuery]);
 
   function submit(e: React.FormEvent) {
     e.preventDefault();

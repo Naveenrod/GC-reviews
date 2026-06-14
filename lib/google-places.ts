@@ -6,6 +6,7 @@ const BASE = "https://places.googleapis.com/v1";
 export type PlaceResult = {
   google_place_id: string;
   name: string;
+  description: string | null;
   address: string | null;
   phone: string | null;
   website: string | null;
@@ -24,6 +25,8 @@ const FIELD_MASK = [
   "places.location",
   "places.rating",
   "places.photos",
+  "places.editorialSummary",
+  "places.primaryTypeDisplayName",
 ].join(",");
 
 function photoUrl(name: string, maxWidth = 800): string {
@@ -34,6 +37,7 @@ function mapPlace(p: any): PlaceResult {
   return {
     google_place_id: p.id,
     name: p.displayName?.text ?? "Unknown",
+    description: p.editorialSummary?.text ?? p.primaryTypeDisplayName?.text ?? null,
     address: p.formattedAddress ?? null,
     phone: p.internationalPhoneNumber ?? null,
     website: p.websiteUri ?? null,

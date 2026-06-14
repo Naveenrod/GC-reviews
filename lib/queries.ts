@@ -44,9 +44,12 @@ export async function getVenues(opts: {
     if (cat) q = q.eq("category_id", cat.id);
   }
   if (opts.query) {
-    q = q.or(
-      `name.ilike.%${opts.query}%,description.ilike.%${opts.query}%,address.ilike.%${opts.query}%`
-    );
+    const words = opts.query.trim().split(/\s+/).filter(Boolean);
+    for (const word of words) {
+      q = q.or(
+        `name.ilike.%${word}%,description.ilike.%${word}%,address.ilike.%${word}%`
+      );
+    }
   }
   if (opts.minRating) q = q.gte("avg_rating", opts.minRating);
 

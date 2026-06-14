@@ -23,7 +23,7 @@ export function VenueCard({ venue }: { venue: Venue }) {
         <img
           src={img}
           alt={venue.name}
-          className="h-full w-full object-cover transition group-hover:scale-105"
+          className="absolute inset-0 h-full w-full object-cover transition group-hover:scale-105"
         />
         {venue.category && (
           <span className="absolute left-3 top-3 rounded-full bg-black/60 px-3 py-1 text-xs font-medium text-white backdrop-blur">
@@ -35,6 +35,9 @@ export function VenueCard({ venue }: { venue: Venue }) {
         <h3 className="font-semibold text-slate-900 group-hover:text-brand">
           {venue.name}
         </h3>
+        {venue.description && (
+          <p className="line-clamp-2 text-sm text-slate-500">{venue.description}</p>
+        )}
         {venue.address && (
           <p className="flex items-center gap-1 text-sm text-slate-500">
             <MapPin size={14} className="shrink-0" />

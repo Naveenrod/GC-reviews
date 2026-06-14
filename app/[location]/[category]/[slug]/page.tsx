@@ -51,22 +51,23 @@ export default async function VenuePage({
 
       {/* gallery */}
       <div className="grid grid-cols-4 gap-2 overflow-hidden rounded-2xl">
-        <div className="col-span-4 sm:col-span-2 sm:row-span-2">
+        <div className="relative col-span-4 h-64 sm:col-span-2 sm:row-span-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={gallery[0]}
             alt={venue.name}
-            className="h-64 w-full object-cover sm:h-full"
+            className="absolute inset-0 h-full w-full object-cover"
           />
         </div>
         {gallery.slice(1, 5).map((p, i) => (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            key={i}
-            src={p}
-            alt=""
-            className="hidden h-[126px] w-full object-cover sm:block"
-          />
+          <div key={i} className="relative hidden h-[126px] sm:block">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={p}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          </div>
         ))}
       </div>
 

@@ -64,6 +64,7 @@ export async function POST(req: Request) {
       slug: slugify(p.name),
       category_id: cat.id,
       location_id: loc.id,
+      description: p.description,
       address: p.address,
       phone: p.phone,
       website: p.website,
@@ -72,6 +73,7 @@ export async function POST(req: Request) {
       photos: p.photos ?? [],
       lat: p.lat,
       lng: p.lng,
+      avg_rating: p.google_rating ?? 0,
     }));
 
     const { error, count } = await sb
