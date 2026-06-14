@@ -155,7 +155,10 @@ export default async function VenuePage({
           )}
 
           <h2 className="mb-4 text-xl font-bold">
-            Reviews ({venue.review_count})
+            Member Reviews
+            {venue.review_count > 0 && (
+              <span className="ml-2 text-base font-normal text-slate-400">({venue.review_count})</span>
+            )}
           </h2>
           <div className="mb-6">
             <ReviewForm venueId={venue.id} />

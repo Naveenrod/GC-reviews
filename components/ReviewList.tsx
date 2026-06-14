@@ -6,8 +6,8 @@ import { timeAgo } from "@/lib/utils";
 export function ReviewList({ reviews }: { reviews: Review[] }) {
   if (reviews.length === 0) {
     return (
-      <p className="rounded-2xl border border-dashed border-slate-300 p-8 text-center text-slate-500">
-        No reviews yet. Be the first to share your experience!
+      <p className="rounded-2xl border border-dashed border-slate-300 p-8 text-center text-slate-400">
+        No member reviews yet — be the first!
       </p>
     );
   }

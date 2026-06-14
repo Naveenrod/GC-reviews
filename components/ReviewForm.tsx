@@ -46,13 +46,15 @@ export function ReviewForm({ venueId }: { venueId: string }) {
 
   if (!user) {
     return (
-      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 text-center">
-        <p className="text-slate-600">
-          <Link href="/auth" className="font-semibold text-brand hover:underline">
-            Sign in
-          </Link>{" "}
-          to write a review.
-        </p>
+      <div className="rounded-2xl border-2 border-dashed border-brand/30 bg-brand/5 p-6 text-center">
+        <p className="text-lg font-semibold text-slate-800">Been here? Share your experience.</p>
+        <p className="mt-1 text-sm text-slate-500">Your review helps others discover great places.</p>
+        <Link
+          href="/auth"
+          className="mt-4 inline-block rounded-xl bg-brand px-6 py-2.5 font-semibold text-white transition hover:brightness-95"
+        >
+          Sign in to review
+        </Link>
       </div>
     );
   }
