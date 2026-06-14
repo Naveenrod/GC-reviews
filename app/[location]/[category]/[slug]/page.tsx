@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { MapPin, Phone, Globe, CalendarCheck, ChevronRight } from "lucide-react";
@@ -8,8 +9,43 @@ import { getVenueBySlug } from "@/lib/queries";
 import { StarRating } from "@/components/StarRating";
 import { ReviewList } from "@/components/ReviewList";
 import { ReviewForm } from "@/components/ReviewForm";
+import { VenueJsonLd, BreadcrumbJsonLd } from "@/components/JsonLd";
 import { formatRating } from "@/lib/utils";
 import type { Review } from "@/lib/types";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ location: string; category: string; slug: string }>;
+}): Promise<Metadata> {
+  const { location, category, slug } = await params;
+  const venue = await getVenueBySlug(location, category, slug);
+  if (!venue) return { title: "Venue not found" };
+
+  const title = `${venue.name} — Reviews & Booking`;
+  const description =
+    venue.description ||
+    `Read reviews of ${venue.name} in ${venue.location?.name}. ${
+      venue.review_count > 0
+        ? `Rated ${venue.avg_rating}/5 from ${venue.review_count} reviews. `
+        : ""
+    }See details and book your visit.`;
+  const image = venue.cover_image_url || venue.photos?.[0];
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `/${location}/${category}/${slug}`,
+    },
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      ...(image && { images: [{ url: image }] }),
+    },
+  };
+}
 
 export default async function VenuePage({
   params,
@@ -33,9 +69,19 @@ export default async function VenuePage({
   ).slice(0, 5);
 
   const bookingUrl = venue.booking_url || venue.website;
+  const reviewList = (reviews as Review[]) ?? [];
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
+      <VenueJsonLd venue={venue} reviews={reviewList} />
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", path: "/" },
+          { name: venue.location?.name ?? "", path: `/${location}` },
+          { name: venue.category?.name ?? "", path: `/${location}/${category}` },
+          { name: venue.name, path: `/${location}/${category}/${slug}` },
+        ]}
+      />
       {/* breadcrumb */}
       <nav className="mb-4 flex items-center gap-1 text-sm text-slate-500">
         <Link href={`/${location}`} className="hover:text-brand">

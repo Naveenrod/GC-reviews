@@ -22,6 +22,7 @@ export function Footer() {
           <ul className="space-y-2 text-sm text-slate-500">
             <li><Link href="/gold-coast" className="hover:text-brand">Gold Coast</Link></li>
             <li><Link href="/brisbane" className="hover:text-brand">Brisbane</Link></li>
+            <li><Link href="/guides" className="hover:text-brand">Local Guides</Link></li>
             <li><Link href="/search?category=restaurants" className="hover:text-brand">Restaurants</Link></li>
             <li><Link href="/search?category=hotels" className="hover:text-brand">Hotels</Link></li>
           </ul>

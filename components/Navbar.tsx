@@ -66,6 +66,9 @@ export function Navbar() {
           <Link href="/search?category=entertainment" className="hover:text-brand">
             Entertainment
           </Link>
+          <Link href="/guides" className="hover:text-brand">
+            Guides
+          </Link>
         </nav>
 
         <div className="relative">

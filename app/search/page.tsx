@@ -1,7 +1,15 @@
 export const dynamic = "force-dynamic";
 
+import type { Metadata } from "next";
 import Link from "next/link";
 import { SearchBar } from "@/components/SearchBar";
+
+export const metadata: Metadata = {
+  title: "Search restaurants, hotels & things to do",
+  description:
+    "Search the best-reviewed restaurants, hotels, bars and entertainment across the Gold Coast and Brisbane.",
+  alternates: { canonical: "/search" },
+};
 import { VenueGrid } from "@/components/VenueGrid";
 import { getCategories, getLocations, getVenues } from "@/lib/queries";
 import { cn } from "@/lib/utils";

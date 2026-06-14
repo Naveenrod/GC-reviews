@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { WebsiteJsonLd } from "@/components/JsonLd";
+import { getBaseUrl, SITE_DESCRIPTION } from "@/lib/site";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,10 +16,27 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const TITLE =
+  "GC Reviews — Restaurants, Hotels & Entertainment on the Gold Coast";
+
 export const metadata: Metadata = {
-  title: "GC Reviews — Restaurants, Hotels & Entertainment on the Gold Coast",
-  description:
-    "Discover, review and book the best restaurants, hotels and entertainment across the Gold Coast and Brisbane — all the reviews in one place.",
+  metadataBase: new URL(getBaseUrl()),
+  title: {
+    default: TITLE,
+    template: "%s | GC Reviews",
+  },
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    title: TITLE,
+    description: SITE_DESCRIPTION,
+    type: "website",
+    siteName: "GC Reviews",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: TITLE,
+    description: SITE_DESCRIPTION,
+  },
 };
 
 export default function RootLayout({
@@ -31,6 +50,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-slate-50">
+        <WebsiteJsonLd />
         <Navbar />
         <main className="flex-1">{children}</main>
         <Footer />
