@@ -57,11 +57,10 @@ export default async function VenuePage({
   if (!venue) notFound();
 
   const sb = await createClient();
-  const { data: reviews } = await sb
-    .from("reviews")
-    .select("*, profile:profiles(*)")
-    .eq("venue_id", venue.id)
-    .order("created_at", { ascending: false });
+  const [{ data: reviews }, { data: googleReviews }] = await Promise.all([
+    sb.from("reviews").select("*, profile:profiles(*)").eq("venue_id", venue.id).order("created_at", { ascending: false }),
+    sb.from("google_reviews").select("*").eq("venue_id", venue.id).order("published_at", { ascending: false }),
+  ]);
 
   const gallery = (venue.photos && venue.photos.length > 0
     ? venue.photos
@@ -162,6 +161,51 @@ export default async function VenuePage({
             <ReviewForm venueId={venue.id} />
           </div>
           <ReviewList reviews={(reviews as Review[]) ?? []} />
+
+          {googleReviews && googleReviews.length > 0 && (
+            <div className="mt-8">
+              <h2 className="mb-4 text-xl font-bold">
+                Google Reviews ({googleReviews.length})
+              </h2>
+              <div className="space-y-4">
+                {googleReviews.map((r) => (
+                  <div key={r.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+                    <div className="flex items-center gap-3">
+                      {r.author_photo && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={r.author_photo} alt={r.author_name} className="h-9 w-9 rounded-full object-cover" />
+                      )}
+                      <div>
+                        <a
+                          href={r.author_url ?? "#"}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-medium text-slate-800 hover:text-brand"
+                        >
+                          {r.author_name}
+                        </a>
+                        <div className="flex items-center gap-1 text-sm text-slate-500">
+                          <StarRating value={r.rating} size={13} />
+                          {r.published_at && (
+                            <span className="ml-1">· {new Date(r.published_at).toLocaleDateString("en-AU", { month: "short", year: "numeric" })}</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    {r.text && (
+                      <p className="mt-3 text-sm leading-relaxed text-slate-600">{r.text}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <p className="mt-4 text-xs text-slate-400">
+                Reviews sourced from{" "}
+                <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-slate-600">
+                  Google Maps
+                </a>
+              </p>
+            </div>
+          )}
         </div>
 
         <aside className="space-y-3">
