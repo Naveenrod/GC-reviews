@@ -60,9 +60,18 @@ export default async function SearchPage({
         />
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-4">
-        {/* Filters */}
-        <aside className="space-y-6 lg:col-span-1">
+      <div className="flex flex-col gap-8 lg:grid lg:grid-cols-4">
+        {/* Results — first in DOM so mobile users see venues immediately */}
+        <div className="lg:col-start-2 lg:col-span-3 lg:row-start-1">
+          <p className="mb-4 text-sm text-slate-500">
+            {venues.length} result{venues.length !== 1 ? "s" : ""}
+            {sp.q ? ` for "${sp.q}"` : ""}
+          </p>
+          <VenueGrid venues={venues} />
+        </div>
+
+        {/* Filters — sidebar on desktop, below results on mobile */}
+        <aside className="space-y-6 lg:col-start-1 lg:col-span-1 lg:row-start-1">
           <div>
             <h4 className="mb-2 font-semibold text-slate-800">Category</h4>
             <ul className="space-y-1 text-sm">
@@ -164,15 +173,6 @@ export default async function SearchPage({
             </ul>
           </div>
         </aside>
-
-        {/* Results */}
-        <div className="lg:col-span-3">
-          <p className="mb-4 text-sm text-slate-500">
-            {venues.length} result{venues.length !== 1 ? "s" : ""}
-            {sp.q ? ` for “${sp.q}”` : ""}
-          </p>
-          <VenueGrid venues={venues} />
-        </div>
       </div>
     </div>
   );
