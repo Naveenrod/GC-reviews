@@ -12,6 +12,7 @@
 
 import { createServiceClient } from "@/lib/supabase/server";
 import { getBaseUrl } from "@/lib/site";
+import { absolutePhotoSrc, venueCover } from "@/lib/photos";
 import { slugify } from "@/lib/utils";
 import type { Venue } from "@/lib/types";
 
@@ -212,7 +213,8 @@ export async function runInstagramPost(): Promise<
   const venue = await pickNextVenue();
   if (!venue) return { ok: false, error: "No new venue to post (all caught up)." };
 
-  const imageUrl = venue.cover_image_url || venue.photos?.[0];
+  // Instagram fetches the image itself, so it needs a public, keyless URL.
+  const imageUrl = absolutePhotoSrc(venueCover(venue));
   if (!imageUrl) return { ok: false, error: "Selected venue has no image." };
 
   const caption = buildVenueCaption(venue);

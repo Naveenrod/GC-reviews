@@ -10,7 +10,9 @@ import { StarRating } from "@/components/StarRating";
 import { ReviewList } from "@/components/ReviewList";
 import { ReviewForm } from "@/components/ReviewForm";
 import { VenueJsonLd, BreadcrumbJsonLd } from "@/components/JsonLd";
+import { VenueImage } from "@/components/VenueImage";
 import { formatRating } from "@/lib/utils";
+import { absolutePhotoSrc, venueCover } from "@/lib/photos";
 import type { Review } from "@/lib/types";
 
 export async function generateMetadata({
@@ -30,7 +32,7 @@ export async function generateMetadata({
         ? `Rated ${venue.avg_rating}/5 from ${venue.review_count} reviews. `
         : ""
     }See details and book your visit.`;
-  const image = venue.cover_image_url || venue.photos?.[0];
+  const image = absolutePhotoSrc(venueCover(venue));
 
   return {
     title,
@@ -64,7 +66,7 @@ export default async function VenuePage({
 
   const gallery = (venue.photos && venue.photos.length > 0
     ? venue.photos
-    : [venue.cover_image_url || "/placeholder-venue.svg"]
+    : [venue.cover_image_url]
   ).slice(0, 5);
 
   const bookingUrl = venue.booking_url || venue.website;
@@ -97,19 +99,20 @@ export default async function VenuePage({
       {/* gallery */}
       <div className="grid grid-cols-4 gap-2 overflow-hidden rounded-2xl">
         <div className="relative col-span-4 h-64 sm:col-span-2 sm:row-span-2">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <VenueImage
             src={gallery[0]}
             alt={venue.name}
+            width={1200}
+            eager
             className="absolute inset-0 h-full w-full object-cover"
           />
         </div>
         {gallery.slice(1, 5).map((p, i) => (
           <div key={i} className="relative hidden h-[126px] sm:block">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <VenueImage
               src={p}
               alt=""
+              width={400}
               className="absolute inset-0 h-full w-full object-cover"
             />
           </div>
@@ -129,7 +132,11 @@ export default async function VenuePage({
               {formatRating(venue.avg_rating)}
             </span>
             <span className="text-slate-400">
-              ({venue.review_count} review{venue.review_count !== 1 ? "s" : ""})
+              {venue.review_count > 0
+                ? `(${venue.review_count} review${venue.review_count !== 1 ? "s" : ""})`
+                : venue.avg_rating > 0
+                  ? "on Google"
+                  : ""}
             </span>
           </div>
         </div>

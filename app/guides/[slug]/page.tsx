@@ -8,7 +8,9 @@ import { getGuideBySlug } from "@/lib/guides";
 import { getVenues } from "@/lib/queries";
 import { StarRating } from "@/components/StarRating";
 import { ItemListJsonLd, BreadcrumbJsonLd } from "@/components/JsonLd";
-import { formatRating } from "@/lib/utils";
+import { VenueImage } from "@/components/VenueImage";
+import { formatRating, ratingSource } from "@/lib/utils";
+import { venueCover } from "@/lib/photos";
 
 export async function generateMetadata({
   params,
@@ -80,7 +82,6 @@ export default async function GuidePage({
         <ol className="mt-8 space-y-5">
           {venues.map((v, i) => {
             const href = `/${v.location?.slug}/${v.category?.slug}/${v.slug}`;
-            const img = v.cover_image_url || v.photos?.[0] || "/placeholder-venue.svg";
             const bookingUrl = v.booking_url || v.website;
             return (
               <li
@@ -89,10 +90,10 @@ export default async function GuidePage({
               >
                 <div className="flex flex-col sm:flex-row">
                   <Link href={href} className="relative block sm:w-56">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={img}
+                    <VenueImage
+                      src={venueCover(v)}
                       alt={v.name}
+                      width={600}
                       className="h-44 w-full object-cover sm:h-full"
                     />
                   </Link>
@@ -121,7 +122,7 @@ export default async function GuidePage({
                         {formatRating(v.avg_rating)}
                       </span>
                       <span className="text-sm text-slate-400">
-                        ({v.review_count})
+                        {ratingSource(v.avg_rating, v.review_count)}
                       </span>
                     </div>
                     {v.description && (

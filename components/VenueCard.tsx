@@ -2,16 +2,14 @@ import Link from "next/link";
 import { MapPin } from "lucide-react";
 import type { Venue } from "@/lib/types";
 import { StarRating } from "@/components/StarRating";
-import { formatRating } from "@/lib/utils";
+import { VenueImage } from "@/components/VenueImage";
+import { formatRating, ratingSource } from "@/lib/utils";
+import { venueCover } from "@/lib/photos";
 
 export function VenueCard({ venue }: { venue: Venue }) {
   const locSlug = venue.location?.slug ?? "";
   const catSlug = venue.category?.slug ?? "";
   const href = `/${locSlug}/${catSlug}/${venue.slug}`;
-  const img =
-    venue.cover_image_url ||
-    venue.photos?.[0] ||
-    "/placeholder-venue.svg";
 
   return (
     <Link
@@ -19,10 +17,10 @@ export function VenueCard({ venue }: { venue: Venue }) {
       className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:-translate-y-1 hover:shadow-lg"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={img}
+        <VenueImage
+          src={venueCover(venue)}
           alt={venue.name}
+          width={600}
           className="absolute inset-0 h-full w-full object-cover transition group-hover:scale-105"
         />
         {venue.category && (
@@ -50,7 +48,7 @@ export function VenueCard({ venue }: { venue: Venue }) {
             {formatRating(venue.avg_rating)}
           </span>
           <span className="text-sm text-slate-400">
-            ({venue.review_count})
+            {ratingSource(venue.avg_rating, venue.review_count)}
           </span>
         </div>
       </div>

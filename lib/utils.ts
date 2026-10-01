@@ -14,6 +14,13 @@ export function formatRating(rating: number): string {
   return rating > 0 ? rating.toFixed(1) : "New";
 }
 
+// Text shown next to the rating. Venues with no member reviews show their
+// imported Google rating, so label it rather than showing "(0)".
+export function ratingSource(avgRating: number, reviewCount: number): string {
+  if (reviewCount > 0) return `(${reviewCount})`;
+  return avgRating > 0 ? "on Google" : "";
+}
+
 export function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
   const days = Math.floor(diff / 86_400_000);
