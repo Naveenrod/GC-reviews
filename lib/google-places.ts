@@ -12,6 +12,7 @@ export type PlaceResult = {
   website: string | null;
   lat: number | null;
   lng: number | null;
+  // Photo resource names ("places/{id}/photos/{ref}"), served via /api/photo.
   photos: string[];
   google_rating: number | null;
 };
@@ -29,10 +30,6 @@ const FIELD_MASK = [
   "places.primaryTypeDisplayName",
 ].join(",");
 
-function photoUrl(name: string, maxWidth = 800): string {
-  return `${BASE}/${name}/media?maxWidthPx=${maxWidth}&key=${KEY}`;
-}
-
 function mapPlace(p: any): PlaceResult {
   return {
     google_place_id: p.id,
@@ -44,7 +41,7 @@ function mapPlace(p: any): PlaceResult {
     lat: p.location?.latitude ?? null,
     lng: p.location?.longitude ?? null,
     google_rating: p.rating ?? null,
-    photos: (p.photos ?? []).slice(0, 5).map((ph: any) => photoUrl(ph.name)),
+    photos: (p.photos ?? []).slice(0, 5).map((ph: any) => ph.name),
   };
 }
 

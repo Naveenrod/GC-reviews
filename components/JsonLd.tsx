@@ -1,5 +1,6 @@
 import type { Review, Venue } from "@/lib/types";
 import { getBaseUrl, SITE_NAME } from "@/lib/site";
+import { absolutePhotoSrc } from "@/lib/photos";
 
 // Renders a JSON-LD <script>. Google reads this to show ⭐ ratings, breadcrumbs, etc.
 function Script({ data }: { data: object }) {
@@ -29,7 +30,7 @@ export function VenueJsonLd({
     ...(venue.address && { address: venue.address }),
     ...(venue.phone && { telephone: venue.phone }),
     ...(venue.website && { sameAs: venue.website }),
-    ...(venue.cover_image_url && { image: venue.cover_image_url }),
+    ...(venue.cover_image_url && { image: absolutePhotoSrc(venue.cover_image_url) }),
     ...(venue.description && { description: venue.description }),
     ...(venue.lat &&
       venue.lng && {
