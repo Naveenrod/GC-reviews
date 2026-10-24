@@ -128,9 +128,16 @@ export default async function VenuePage({
             <span className="font-semibold text-slate-800">
               {formatRating(venue.avg_rating)}
             </span>
-            <span className="text-slate-400">
-              ({venue.review_count} review{venue.review_count !== 1 ? "s" : ""})
-            </span>
+            {venue.review_count > 0 && (
+              <span className="text-slate-400">
+                {venue.review_count} member review{venue.review_count !== 1 ? "s" : ""}
+              </span>
+            )}
+            {googleReviews && googleReviews.length > 0 && (
+              <span className="text-slate-400">
+                {venue.review_count > 0 ? "·" : ""} {googleReviews.length} Google review{googleReviews.length !== 1 ? "s" : ""}
+              </span>
+            )}
           </div>
         </div>
         {bookingUrl && (

@@ -49,9 +49,11 @@ export function VenueCard({ venue }: { venue: Venue }) {
           <span className="text-sm font-semibold text-slate-700">
             {formatRating(venue.avg_rating)}
           </span>
-          <span className="text-sm text-slate-400">
-            ({venue.review_count})
-          </span>
+          {venue.review_count > 0 && (
+            <span className="text-sm text-slate-400">
+              ({venue.review_count})
+            </span>
+          )}
         </div>
       </div>
     </Link>
