@@ -26,7 +26,6 @@ const FIELD_MASK = [
   "places.rating",
   "places.photos",
   "places.editorialSummary",
-  "places.primaryTypeDisplayName",
 ].join(",");
 
 function photoUrl(name: string, maxWidth = 800): string {
@@ -37,7 +36,7 @@ function mapPlace(p: any): PlaceResult {
   return {
     google_place_id: p.id,
     name: p.displayName?.text ?? "Unknown",
-    description: p.editorialSummary?.text ?? p.primaryTypeDisplayName?.text ?? null,
+    description: p.editorialSummary?.text ?? null,
     address: p.formattedAddress ?? null,
     phone: p.internationalPhoneNumber ?? null,
     website: p.websiteUri ?? null,
