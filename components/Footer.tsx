@@ -31,8 +31,8 @@ export function Footer() {
           <h4 className="mb-3 font-semibold text-slate-800">Company</h4>
           <ul className="space-y-2 text-sm text-slate-500">
             <li><Link href="/auth" className="hover:text-brand">Sign in</Link></li>
-            <li><span className="cursor-default">About</span></li>
-            <li><span className="cursor-default">Contact</span></li>
+            <li><Link href="/random" prefetch={false} className="hover:text-brand">Surprise me</Link></li>
+            <li><Link href="/guides" className="hover:text-brand">Local Guides</Link></li>
           </ul>
         </div>
         <div>

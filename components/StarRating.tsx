@@ -1,9 +1,8 @@
-"use client";
-
 import { Star } from "lucide-react";
-import { useState } from "react";
 import { cn } from "@/lib/utils";
 
+// Server-safe. Renders fractional (half/partial) stars so 4.3 looks like 4.3,
+// not 4, and exposes the value to screen readers.
 export function StarRating({
   value,
   size = 16,
@@ -13,56 +12,29 @@ export function StarRating({
   size?: number;
   className?: string;
 }) {
+  const v = Math.max(0, Math.min(5, value));
   return (
-    <div className={cn("flex items-center gap-0.5", className)}>
-      {[1, 2, 3, 4, 5].map((i) => (
-        <Star
-          key={i}
-          size={size}
-          className={
-            i <= Math.round(value)
-              ? "fill-accent text-accent"
-              : "fill-transparent text-slate-300"
-          }
-        />
-      ))}
-    </div>
-  );
-}
-
-export function StarInput({
-  value,
-  onChange,
-  size = 28,
-}: {
-  value: number;
-  onChange: (v: number) => void;
-  size?: number;
-}) {
-  const [hover, setHover] = useState(0);
-  const active = hover || value;
-  return (
-    <div className="flex items-center gap-1">
-      {[1, 2, 3, 4, 5].map((i) => (
-        <button
-          key={i}
-          type="button"
-          onClick={() => onChange(i)}
-          onMouseEnter={() => setHover(i)}
-          onMouseLeave={() => setHover(0)}
-          className="transition-transform hover:scale-110"
-          aria-label={`${i} star${i > 1 ? "s" : ""}`}
-        >
-          <Star
-            size={size}
-            className={
-              i <= active
-                ? "fill-accent text-accent"
-                : "fill-transparent text-slate-300"
-            }
-          />
-        </button>
-      ))}
+    <div
+      className={cn("flex items-center gap-0.5", className)}
+      role="img"
+      aria-label={v > 0 ? `Rated ${v.toFixed(1)} out of 5` : "Not yet rated"}
+    >
+      {[1, 2, 3, 4, 5].map((i) => {
+        const fill = Math.max(0, Math.min(1, v - (i - 1)));
+        return (
+          <span key={i} className="relative inline-block" style={{ width: size, height: size }}>
+            <Star size={size} className="absolute inset-0 fill-transparent text-slate-300" />
+            {fill > 0 && (
+              <span
+                className="absolute inset-0 overflow-hidden"
+                style={{ width: `${fill * 100}%` }}
+              >
+                <Star size={size} className="fill-accent text-accent" />
+              </span>
+            )}
+          </span>
+        );
+      })}
     </div>
   );
 }

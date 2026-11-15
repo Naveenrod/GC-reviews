@@ -1,19 +1,16 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { WebsiteJsonLd } from "@/components/JsonLd";
+import { BackToTop } from "@/components/fx/BackToTop";
 import { getBaseUrl, SITE_DESCRIPTION } from "@/lib/site";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  display: "swap",
 });
 
 const TITLE =
@@ -39,21 +36,21 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport = { themeColor: "#0d9488" };
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col bg-slate-50">
+    <html lang="en" className={`${geistSans.variable} h-full antialiased`}>
+      <body className="grain flex min-h-full flex-col bg-slate-50">
         <WebsiteJsonLd />
         <Navbar />
         <main className="flex-1">{children}</main>
         <Footer />
+        <BackToTop />
       </body>
     </html>
   );

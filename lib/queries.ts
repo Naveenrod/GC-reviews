@@ -93,3 +93,37 @@ export async function getVenueBySlug(
     .single();
   return (data as Venue) ?? null;
 }
+
+export async function getSiteStats(): Promise<{
+  venues: number;
+  reviews: number;
+  googleReviews: number;
+}> {
+  const sb = await createClient();
+  const [v, r, g] = await Promise.all([
+    sb.from("venues").select("*", { count: "exact", head: true }),
+    sb.from("reviews").select("*", { count: "exact", head: true }),
+    sb.from("google_reviews").select("*", { count: "exact", head: true }),
+  ]);
+  return {
+    venues: v.count ?? 0,
+    reviews: r.count ?? 0,
+    googleReviews: g.count ?? 0,
+  };
+}
+
+// Picks one random venue (used by the "Surprise me" button).
+export async function getRandomVenue(): Promise<Venue | null> {
+  const sb = await createClient();
+  const { count } = await sb
+    .from("venues")
+    .select("*", { count: "exact", head: true });
+  if (!count) return null;
+  const offset = Math.floor(Math.random() * count);
+  const { data } = await sb
+    .from("venues")
+    .select(VENUE_SELECT)
+    .order("created_at")
+    .range(offset, offset);
+  return (data?.[0] as Venue) ?? null;
+}
