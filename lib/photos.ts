@@ -1,12 +1,15 @@
 // Photo resolution — safe to import anywhere (no secrets, no network).
 //
-// Priority for a venue's imagery (all free except the last Google step):
-//   1. og_image_url        — the venue's own website hero image
-//   2. community_cover_url — a member-uploaded photo
-//   3. Google Places photo — served through /api/photo (cached, key hidden, budgeted)
-//   4. designed placeholder — /api/placeholder (generated SVG)
+// Priority for a venue's imagery:
+//   1. og_image_url        — the venue's own website hero image (free)
+//   2. community_cover_url — a member-uploaded photo (free)
+//   3. Google Places photo — OFF by default because it is a paid API. Only used when
+//      NEXT_PUBLIC_GOOGLE_PHOTOS=on is set in Vercel.
+//   4. designed placeholder — /api/placeholder (generated SVG, free)
 
 import type { Venue } from "@/lib/types";
+
+export const GOOGLE_PHOTOS_ENABLED = process.env.NEXT_PUBLIC_GOOGLE_PHOTOS === "on";
 
 const GOOGLE_NAME = /places\/[A-Za-z0-9_-]+\/photos\/[A-Za-z0-9_-]+/;
 
@@ -22,6 +25,7 @@ export function isGooglePhoto(value: string | null | undefined): boolean {
 }
 
 export function proxiedGooglePhoto(value: string | null | undefined, width = 800): string | null {
+  if (!GOOGLE_PHOTOS_ENABLED) return null;
   const name = googlePhotoName(value);
   return name ? `/api/photo/${name}?w=${width}` : null;
 }

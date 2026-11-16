@@ -1,6 +1,31 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { searchPlaces, type PlaceResult } from "@/lib/google-places";
+import { searchPlaces, SearchLimitError, type PlaceResult } from "@/lib/google-places";
+import { createServiceClient } from "@/lib/supabase/server";
+
+// Google gives 1,000 free Text Search requests a month for the tier this import
+// uses. We stop well before that so importing never costs money.
+// Each "Fetch from Google" uses 1-3 requests (20 results per request).
+const MONTHLY_LIMIT = Number(process.env.GOOGLE_SEARCH_MONTHLY_LIMIT ?? 900);
+
+function monthKey() {
+  return `places_search_${new Date().toISOString().slice(0, 7)}`;
+}
+
+async function usedThisMonth(): Promise<number | null> {
+  const svc = createServiceClient();
+  const { data, error } = await svc.from("app_config").select("value").eq("key", monthKey()).maybeSingle();
+  if (error) return null;
+  return Number(data?.value ?? 0);
+}
+
+// Atomically reserve one request. Fails closed: if we can't count, we don't call Google.
+async function reserveRequest(): Promise<boolean> {
+  const svc = createServiceClient();
+  const { data, error } = await svc.rpc("bump_counter", { p_key: monthKey() });
+  if (error) return false;
+  return Number(data) <= MONTHLY_LIMIT;
+}
 import { fetchOgImage, mapLimit } from "@/lib/og-image";
 import { slugify } from "@/lib/utils";
 
@@ -48,9 +73,18 @@ export async function POST(req: Request) {
     const keyword = body.keyword || cat.name;
     const query = `${keyword} in ${loc.name} QLD Australia`;
     try {
-      const results = await searchPlaces(query);
-      return NextResponse.json({ results });
+      const results = await searchPlaces(query, reserveRequest);
+      const used = await usedThisMonth();
+      return NextResponse.json({ results, used: used == null ? null : Math.min(used, MONTHLY_LIMIT), limit: MONTHLY_LIMIT });
     } catch (e) {
+      if (e instanceof SearchLimitError) {
+        return NextResponse.json(
+          {
+            error: `This month's free Google search allowance (${MONTHLY_LIMIT} requests) is used up, so nothing was charged. It resets on the 1st.`,
+          },
+          { status: 429 }
+        );
+      }
       return NextResponse.json({ error: e instanceof Error ? e.message : String(e) }, { status: 500 });
     }
   }

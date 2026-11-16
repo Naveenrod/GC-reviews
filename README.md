@@ -24,7 +24,9 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=...   # Settings → API → anon public key
 SUPABASE_SERVICE_ROLE_KEY=...       # Settings → API → service_role key
 GOOGLE_PLACES_API_KEY=...           # already filled in
 UNSPLASH_ACCESS_KEY=...             # optional — free location banners (unsplash.com/developers)
-PHOTO_MONTHLY_BUDGET=900            # optional — max Google photo fetches per month (default 900)
+GOOGLE_SEARCH_MONTHLY_LIMIT=900     # optional — admin import stops here, inside Google's 1,000 free
+# NEXT_PUBLIC_GOOGLE_PHOTOS=on      # NOT recommended — turns paid Google photos back on
+# PHOTO_MONTHLY_BUDGET=900          # only used when Google photos are on
 ```
 Also run [`supabase/migration_photos.sql`](supabase/migration_photos.sql) in the SQL editor to enable the photo pipeline below.
 
@@ -50,18 +52,25 @@ Then visit `/admin` → **Import venues** to pull real Gold Coast / Brisbane lis
 - **Reviews** require sign-in (email or Google). Average ratings recompute automatically via a Postgres trigger.
 - **Expansion**: add a row to the `locations` table and re-run the import for a new city.
 
-## Photos (free-first pipeline)
-Each venue image is picked from the first source that works, so the site keeps
-looking good even when Google's free photo quota runs out:
+## Google costs
+The public site makes **no** Google API calls. Google is only used when an admin
+clicks **Fetch from Google** on the import page, and that stops automatically at
+`GOOGLE_SEARCH_MONTHLY_LIMIT` requests a month, inside Google's free allowance.
+The monthly cron no longer calls Google. (The map on venue pages is Google's free
+keyless embed.)
 
-1. **Venue website image** (`og_image_url`) — the venue's own hero image, read from
-   its website's `og:image` tag on import, on the monthly cron, or via
-   **Admin → Find website photos**. Free.
+## Photos (free-first pipeline)
+Each venue image is picked from the first source that works:
+
+1. **Venue website image** (`og_image_url`) — the venue's own photo, read from its
+   website (share image, schema.org data, or the first large photo) on import, on
+   the monthly cron, or via **Admin → Find website photos**. Free. Running it again
+   retries venues that still have no photo.
 2. **Member photos** — reviewers can attach up to 4 photos. They're resized in the
    browser and stored in the public `review-photos` Supabase Storage bucket. Free tier: 1 GB.
-3. **Google Places photo** — only the photo *name* is stored. Images are served
-   through `/api/photo/...`, which keeps the API key on the server, is cached by the
-   CDN for 30 days, and stops at `PHOTO_MONTHLY_BUDGET` fetches per month.
+3. **Google Places photo** — off by default because it is paid. Only the photo
+   *name* is stored; set `NEXT_PUBLIC_GOOGLE_PHOTOS=on` to serve them through
+   `/api/photo/...` (key hidden, CDN-cached, capped at `PHOTO_MONTHLY_BUDGET`).
 4. **Designed placeholder** — `/api/placeholder` draws a gradient card with the
    category icon and the venue's initials.
 

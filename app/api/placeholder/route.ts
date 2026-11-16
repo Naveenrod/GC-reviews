@@ -64,8 +64,8 @@ export function GET(req: Request) {
 <rect width="800" height="600" fill="url(#dots)"/>
 <circle cx="${cx}" cy="${cy}" r="320" fill="url(#r)"/>
 <circle cx="${800 - cx / 2}" cy="${600 - cy / 2}" r="140" fill="#fff" fill-opacity=".08"/>
-<g transform="translate(336 186) scale(5.3)" fill="none" stroke="#fff" stroke-opacity=".9" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="${icon}"/></g>
-<text x="400" y="400" text-anchor="middle" font-family="ui-sans-serif, system-ui, Helvetica, Arial" font-size="72" font-weight="700" fill="#fff" fill-opacity=".92">${initials}</text>
+<g transform="translate(352 180) scale(4)" fill="none" stroke="#fff" stroke-opacity=".9" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="${icon}"/></g>
+<text x="400" y="372" text-anchor="middle" font-family="ui-sans-serif, system-ui, Helvetica, Arial" font-size="56" font-weight="700" fill="#fff" fill-opacity=".92">${initials}</text>
 </svg>`;
 
   return new NextResponse(svg, {

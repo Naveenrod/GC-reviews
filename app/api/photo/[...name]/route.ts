@@ -1,4 +1,5 @@
-// Cached Google Places photo proxy.
+// Cached Google Places photo proxy. DISABLED unless NEXT_PUBLIC_GOOGLE_PHOTOS=on,
+// because Google photos are a paid API.
 // - The API key never leaves the server.
 // - Responses are cached by Vercel's CDN and Next's data cache for 30 days,
 //   so Google is only called on a cache miss (roughly once per photo per month).
@@ -40,6 +41,7 @@ async function withinBudget(): Promise<boolean> {
 }
 
 export async function GET(req: Request, ctx: { params: Promise<{ name: string[] }> }) {
+  if (process.env.NEXT_PUBLIC_GOOGLE_PHOTOS !== "on") return unavailable("disabled");
   const { name } = await ctx.params;
   const photoName = name.join("/");
   const apiKey = process.env.GOOGLE_PLACES_API_KEY;

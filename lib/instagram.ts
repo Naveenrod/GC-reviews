@@ -196,7 +196,7 @@ export async function pickNextVenue(): Promise<Venue | null> {
   const { data } = await sb
     .from("venues")
     .select("*, category:categories(*), location:locations(*)")
-    .not("cover_image_url", "is", null)
+    .or("og_image_url.not.is.null,community_cover_url.not.is.null")
     .order("avg_rating", { ascending: false })
     .order("review_count", { ascending: false })
     .limit(200);

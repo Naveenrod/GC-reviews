@@ -58,13 +58,23 @@ function mapPlace(p: RawPlace): PlaceResult {
   };
 }
 
+export class SearchLimitError extends Error {}
+
 // Text search, e.g. "restaurants in Gold Coast QLD".
-// Fetches up to 3 pages (max 60 results) automatically.
-export async function searchPlaces(textQuery: string): Promise<PlaceResult[]> {
+// Fetches up to 3 pages (max 60 results). `allowRequest` is asked before every
+// billable request; return false to stop (used to stay inside the free tier).
+export async function searchPlaces(
+  textQuery: string,
+  allowRequest: () => Promise<boolean> = async () => true
+): Promise<PlaceResult[]> {
   const all: PlaceResult[] = [];
   let pageToken: string | undefined;
 
   for (let page = 0; page < 3; page++) {
+    if (!(await allowRequest())) {
+      if (page === 0) throw new SearchLimitError("limit");
+      break;
+    }
     const body: Record<string, unknown> = {
       textQuery,
       languageCode: "en",

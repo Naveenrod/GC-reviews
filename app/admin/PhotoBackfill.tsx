@@ -3,28 +3,38 @@
 import { useState } from "react";
 import { ImageIcon } from "lucide-react";
 
-// Runs /api/admin/photos in batches until every venue website has been checked.
+// Runs /api/admin/photos in batches until every venue without a photo has been
+// checked (including ones that came back empty on an earlier run).
 export function PhotoBackfill() {
   const [running, setRunning] = useState(false);
   const [log, setLog] = useState<string | null>(null);
 
   async function run() {
     setRunning(true);
+    const before = new Date().toISOString();
     let checked = 0;
     let found = 0;
+    let withPhoto = 0;
     try {
-      for (let i = 0; i < 100; i++) {
-        const res = await fetch("/api/admin/photos", { method: "POST" });
+      for (let i = 0; i < 200; i++) {
+        const res = await fetch("/api/admin/photos", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ before }),
+        });
         const json = await res.json();
         if (json.error) throw new Error(json.error);
         checked += json.checked;
         found += json.found;
-        setLog(`Checked ${checked} venue websites, found ${found} photos. ${json.remaining} left…`);
+        withPhoto = json.withPhoto;
+        setLog(`Checked ${checked} websites, found ${found} new photos. ${json.remaining} left…`);
         if (json.remaining === 0 || json.checked === 0) break;
       }
-      setLog(`Done. Checked ${checked} venue websites and found ${found} free photos.`);
+      setLog(
+        `Done. Checked ${checked} websites and found ${found} new photos. ${withPhoto} venues now have a free photo.`
+      );
     } catch (e) {
-      setLog(`Error: ${e instanceof Error ? e.message : String(e)}`);
+      setLog(`Error: ${e instanceof Error ? e.message : String(e)}. Tap the button again to continue.`);
     } finally {
       setRunning(false);
     }
@@ -38,7 +48,8 @@ export function PhotoBackfill() {
             <ImageIcon size={18} className="text-brand" /> Free venue photos
           </h2>
           <p className="mt-1 text-sm text-slate-500">
-            Pull each venue&apos;s hero image from its own website. Cuts Google photo usage to near zero.
+            Find each venue&apos;s photo on its own website. Free, and safe to run again: it retries
+            venues that still have no photo.
           </p>
         </div>
         <button

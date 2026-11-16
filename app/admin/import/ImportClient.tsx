@@ -43,6 +43,9 @@ export function ImportClient({
     if (json.error) {
       setStatus(`Error: ${json.error}`);
     } else {
+      if (json.used != null) {
+        setStatus(`Found ${json.results.length} places. ${json.used} of ${json.limit} free Google requests used this month.`);
+      }
       setResults(json.results);
       setSelected(new Set(json.results.map((r: PlaceResult) => r.google_place_id)));
     }
@@ -114,6 +117,10 @@ export function ImportClient({
         >
           {loading ? "Searching…" : "Fetch from Google"}
         </button>
+        <p className="w-full text-xs text-slate-500">
+          Free: searches stop automatically before Google would start charging. Each search uses 1 to 3 of
+          the monthly free requests.
+        </p>
       </div>
 
       {status && <p className="mt-4 text-sm font-medium text-slate-700">{status}</p>}
@@ -150,9 +157,9 @@ export function ImportClient({
                   >
                     {on && <Check size={16} />}
                   </span>
-                  {r.photos[0] && (
+                  {proxiedGooglePhoto(r.photos[0], 200) && (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={proxiedGooglePhoto(r.photos[0], 200) ?? ""} alt="" className="h-12 w-12 rounded-lg object-cover" />
+                    <img src={proxiedGooglePhoto(r.photos[0], 200)!} alt="" className="h-12 w-12 rounded-lg object-cover" />
                   )}
                   <div className="min-w-0 flex-1">
                     <p className="font-medium text-slate-800">{r.name}</p>
