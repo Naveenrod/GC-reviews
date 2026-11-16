@@ -40,6 +40,22 @@ export function ReviewList({ reviews }: { reviews: Review[] }) {
             </div>
           </div>
           {r.body && <p className="mt-3 text-slate-600">{r.body}</p>}
+          {r.photos && r.photos.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {r.photos.map((url) => (
+                <a
+                  key={url}
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block h-24 w-24 overflow-hidden rounded-xl border border-slate-200 transition hover:scale-105"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={url} alt={`Photo from ${r.profile?.display_name ?? "a member"}`} loading="lazy" className="h-full w-full object-cover" />
+                </a>
+              ))}
+            </div>
+          )}
         </div>
       ))}
     </div>

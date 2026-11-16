@@ -3,12 +3,10 @@ import { createClient } from "@supabase/supabase-js";
 
 export const maxDuration = 300;
 
+import { fetchOgImage, mapLimit } from "@/lib/og-image";
+
 const PLACES_BASE = "https://places.googleapis.com/v1";
 const PLACES_KEY = process.env.GOOGLE_PLACES_API_KEY!;
-
-function photoUrl(name: string) {
-  return `${PLACES_BASE}/${name}/media?maxWidthPx=800&key=${PLACES_KEY}`;
-}
 
 export async function GET(req: Request) {
   const auth = req.headers.get("authorization");
@@ -43,10 +41,9 @@ export async function GET(req: Request) {
 
       if (!res.ok) { skipped++; continue; }
 
-      const json = await res.json();
-      const photos: string[] = (json.photos ?? [])
-        .slice(0, 5)
-        .map((ph: any) => photoUrl(ph.name));
+      const json = (await res.json()) as { photos?: { name: string }[]; rating?: number };
+      // Store bare photo names; /api/photo serves them with the key hidden.
+      const photos: string[] = (json.photos ?? []).slice(0, 5).map((ph) => ph.name);
 
       if (!photos.length) { skipped++; continue; }
 
@@ -58,10 +55,34 @@ export async function GET(req: Request) {
 
       updated++;
       await new Promise((r) => setTimeout(r, 60));
-    } catch (e: any) {
-      errors.push(venue.google_place_id + ": " + e.message);
+    } catch (e) {
+      errors.push(venue.google_place_id + ": " + (e instanceof Error ? e.message : String(e)));
     }
   }
 
-  return NextResponse.json({ total: venues.length, updated, skipped, errors: errors.slice(0, 10) });
+  // Free photos: look for website og:image on venues we haven't checked yet.
+  const { data: unchecked } = await sb
+    .from("venues")
+    .select("id, website")
+    .is("og_checked_at", null)
+    .not("website", "is", null)
+    .limit(150);
+  let ogFound = 0;
+  await mapLimit(unchecked ?? [], 6, async (v) => {
+    const og = await fetchOgImage(v.website);
+    if (og) ogFound++;
+    await sb
+      .from("venues")
+      .update({ og_image_url: og, og_checked_at: new Date().toISOString() })
+      .eq("id", v.id);
+  });
+
+  return NextResponse.json({
+    total: venues.length,
+    updated,
+    skipped,
+    ogChecked: unchecked?.length ?? 0,
+    ogFound,
+    errors: errors.slice(0, 10),
+  });
 }

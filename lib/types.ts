@@ -23,8 +23,11 @@ export type Venue = {
   website: string | null;
   booking_url: string | null;
   description: string | null;
-  cover_image_url: string | null;
-  photos: string[] | null;
+  cover_image_url: string | null;        // Google photo name (places/.../photos/...) or legacy URL
+  photos: string[] | null;               // Google photo names / legacy URLs
+  og_image_url?: string | null;          // venue website hero image (free)
+  og_checked_at?: string | null;
+  community_cover_url?: string | null;   // first member-uploaded photo (free)
   lat: number | null;
   lng: number | null;
   avg_rating: number;

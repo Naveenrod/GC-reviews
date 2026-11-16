@@ -24,6 +24,8 @@ import { ShareButton } from "@/components/fx/ShareButton";
 import { Reveal } from "@/components/fx/Reveal";
 import { VenueJsonLd, BreadcrumbJsonLd } from "@/components/JsonLd";
 import { formatRating } from "@/lib/utils";
+import { venueCover, venueGallery, placeholderFor, absoluteUrl } from "@/lib/photos";
+import { getBaseUrl } from "@/lib/site";
 import type { Review } from "@/lib/types";
 
 type GoogleReview = {
@@ -53,7 +55,7 @@ export async function generateMetadata({
         ? `Rated ${venue.avg_rating}/5 from ${venue.review_count} reviews. `
         : ""
     }See details and book your visit.`;
-  const image = venue.cover_image_url || venue.photos?.[0];
+  const image = absoluteUrl(getBaseUrl(), venueCover(venue, 1200));
 
   return {
     title,
@@ -63,7 +65,7 @@ export async function generateMetadata({
       title,
       description,
       type: "website",
-      ...(image && { images: [{ url: image }] }),
+      images: [{ url: image }],
     },
   };
 }
@@ -93,13 +95,16 @@ export default async function VenuePage({
       .order("published_at", { ascending: false }),
   ]);
 
-  const gallery =
-    venue.photos && venue.photos.length > 0
-      ? venue.photos
-      : [venue.cover_image_url || "/placeholder-venue.svg"];
 
   const bookingUrl = venue.booking_url || venue.website;
   const reviewList = (reviews as Review[]) ?? [];
+  const communityPhotos = reviewList.flatMap((r) => r.photos ?? []);
+  const gallery = venueGallery(venue, communityPhotos);
+  const credits: Record<string, string> = {};
+  if (venue.og_image_url) credits[venue.og_image_url] = "From the venue's website";
+  for (const r of reviewList)
+    for (const ph of r.photos ?? []) credits[ph] = `Photo by ${r.profile?.display_name ?? "a member"}`;
+  for (const g of gallery) if (g.startsWith("/api/photo/")) credits[g] = "Photo via Google";
   const gReviews = (googleReviews as GoogleReview[]) ?? [];
   const allRatings = [...reviewList.map((r) => r.rating), ...gReviews.map((r) => r.rating)];
   const mapsUrl =
@@ -109,7 +114,7 @@ export default async function VenuePage({
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 pb-28 sm:pb-8">
-      <VenueJsonLd venue={venue} reviews={reviewList} />
+      <VenueJsonLd venue={venue} reviews={reviewList} image={absoluteUrl(getBaseUrl(), venueCover(venue, 1200))} />
       <BreadcrumbJsonLd
         items={[
           { name: "Home", path: "/" },
@@ -147,7 +152,7 @@ export default async function VenuePage({
         <span className="text-slate-700">{venue.name}</span>
       </nav>
 
-      <Gallery photos={gallery} alt={venue.name} />
+      <Gallery photos={gallery} alt={venue.name} fallback={placeholderFor(venue)} credits={credits} />
 
       {/* header */}
       <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -166,6 +171,7 @@ export default async function VenuePage({
             )}
             {gReviews.length > 0 && (
               <span className="text-slate-500">
+                {venue.review_count > 0 && <span aria-hidden className="mr-2">·</span>}
                 {gReviews.length} Google review{gReviews.length !== 1 ? "s" : ""}
               </span>
             )}

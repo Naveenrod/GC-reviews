@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Star, Check } from "lucide-react";
 import type { Category, Location } from "@/lib/types";
+import { proxiedGooglePhoto } from "@/lib/photos";
 
 type PlaceResult = {
   google_place_id: string;
@@ -50,7 +51,8 @@ export function ImportClient({
   function toggle(id: string) {
     setSelected((s) => {
       const n = new Set(s);
-      n.has(id) ? n.delete(id) : n.add(id);
+      if (n.has(id)) n.delete(id);
+      else n.add(id);
       return n;
     });
   }
@@ -150,7 +152,7 @@ export function ImportClient({
                   </span>
                   {r.photos[0] && (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={r.photos[0]} alt="" className="h-12 w-12 rounded-lg object-cover" />
+                    <img src={proxiedGooglePhoto(r.photos[0], 200) ?? ""} alt="" className="h-12 w-12 rounded-lg object-cover" />
                   )}
                   <div className="min-w-0 flex-1">
                     <p className="font-medium text-slate-800">{r.name}</p>

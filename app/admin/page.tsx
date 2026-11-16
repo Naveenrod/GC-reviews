@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { Download, Store, MessageSquare, Camera } from "lucide-react";
 import { requireAdmin } from "@/lib/admin";
+import { PhotoBackfill } from "./PhotoBackfill";
 
 export default async function AdminDashboard() {
   const { supabase } = await requireAdmin();
@@ -44,7 +45,7 @@ export default async function AdminDashboard() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
       <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-      <div className="mt-6 grid gap-4 sm:grid-cols-3">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((c) => (
           <Link
             key={c.href}
@@ -59,6 +60,7 @@ export default async function AdminDashboard() {
           </Link>
         ))}
       </div>
+      <PhotoBackfill />
     </div>
   );
 }

@@ -23,7 +23,10 @@ NEXT_PUBLIC_SUPABASE_URL=...        # Settings → API → Project URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY=...   # Settings → API → anon public key
 SUPABASE_SERVICE_ROLE_KEY=...       # Settings → API → service_role key
 GOOGLE_PLACES_API_KEY=...           # already filled in
+UNSPLASH_ACCESS_KEY=...             # optional — free location banners (unsplash.com/developers)
+PHOTO_MONTHLY_BUDGET=900            # optional — max Google photo fetches per month (default 900)
 ```
+Also run [`supabase/migration_photos.sql`](supabase/migration_photos.sql) in the SQL editor to enable the photo pipeline below.
 
 ### 3. Run
 ```bash
@@ -47,5 +50,24 @@ Then visit `/admin` → **Import venues** to pull real Gold Coast / Brisbane lis
 - **Reviews** require sign-in (email or Google). Average ratings recompute automatically via a Postgres trigger.
 - **Expansion**: add a row to the `locations` table and re-run the import for a new city.
 
-## Notes
-- Google Places photo URLs embed the API key. For production, restrict the key to the Places API + your domains, or add an image proxy route.
+## Photos (free-first pipeline)
+Each venue image is picked from the first source that works, so the site keeps
+looking good even when Google's free photo quota runs out:
+
+1. **Venue website image** (`og_image_url`) — the venue's own hero image, read from
+   its website's `og:image` tag on import, on the monthly cron, or via
+   **Admin → Find website photos**. Free.
+2. **Member photos** — reviewers can attach up to 4 photos. They're resized in the
+   browser and stored in the public `review-photos` Supabase Storage bucket. Free tier: 1 GB.
+3. **Google Places photo** — only the photo *name* is stored. Images are served
+   through `/api/photo/...`, which keeps the API key on the server, is cached by the
+   CDN for 30 days, and stops at `PHOTO_MONTHLY_BUDGET` fetches per month.
+4. **Designed placeholder** — `/api/placeholder` draws a gradient card with the
+   category icon and the venue's initials.
+
+If an image fails to load in the browser, it falls through to the next source automatically.
+Location pages and home-page location cards use a free Unsplash banner when
+`UNSPLASH_ACCESS_KEY` is set. Stock photos are never used for individual venues.
+
+Existing venues imported before this change still work: legacy Google URLs are
+recognised and routed through the proxy, so the key is no longer exposed.

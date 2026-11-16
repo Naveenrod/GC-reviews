@@ -28,11 +28,22 @@ const FIELD_MASK = [
   "places.editorialSummary",
 ].join(",");
 
-function photoUrl(name: string, maxWidth = 800): string {
-  return `${BASE}/${name}/media?maxWidthPx=${maxWidth}&key=${KEY}`;
-}
+// We store the photo *name* (places/.../photos/...) and serve it through
+// /api/photo, which hides the key and caches aggressively.
 
-function mapPlace(p: any): PlaceResult {
+type RawPlace = {
+  id: string;
+  displayName?: { text?: string };
+  editorialSummary?: { text?: string };
+  formattedAddress?: string;
+  internationalPhoneNumber?: string;
+  websiteUri?: string;
+  location?: { latitude?: number; longitude?: number };
+  rating?: number;
+  photos?: { name: string }[];
+};
+
+function mapPlace(p: RawPlace): PlaceResult {
   return {
     google_place_id: p.id,
     name: p.displayName?.text ?? "Unknown",
@@ -43,7 +54,7 @@ function mapPlace(p: any): PlaceResult {
     lat: p.location?.latitude ?? null,
     lng: p.location?.longitude ?? null,
     google_rating: p.rating ?? null,
-    photos: (p.photos ?? []).slice(0, 5).map((ph: any) => photoUrl(ph.name)),
+    photos: (p.photos ?? []).slice(0, 5).map((ph: { name: string }) => ph.name),
   };
 }
 

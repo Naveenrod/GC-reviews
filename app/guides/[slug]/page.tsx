@@ -9,6 +9,8 @@ import { getVenues } from "@/lib/queries";
 import { StarRating } from "@/components/StarRating";
 import { ItemListJsonLd, BreadcrumbJsonLd } from "@/components/JsonLd";
 import { formatRating } from "@/lib/utils";
+import { SmartImage } from "@/components/SmartImage";
+import { venueCover, venueFallback, placeholderFor } from "@/lib/photos";
 
 export async function generateMetadata({
   params,
@@ -80,7 +82,6 @@ export default async function GuidePage({
         <ol className="mt-8 space-y-5">
           {venues.map((v, i) => {
             const href = `/${v.location?.slug}/${v.category?.slug}/${v.slug}`;
-            const img = v.cover_image_url || v.photos?.[0] || "/placeholder-venue.svg";
             const bookingUrl = v.booking_url || v.website;
             return (
               <li
@@ -89,9 +90,8 @@ export default async function GuidePage({
               >
                 <div className="flex flex-col sm:flex-row">
                   <Link href={href} className="relative block sm:w-56">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={img}
+                    <SmartImage
+                      sources={[venueCover(v, 600), venueFallback(v), placeholderFor(v)]}
                       alt={v.name}
                       className="h-44 w-full object-cover sm:h-full"
                     />

@@ -4,6 +4,8 @@ import type { Venue } from "@/lib/types";
 import { StarRating } from "@/components/StarRating";
 import { TiltCard } from "@/components/fx/TiltCard";
 import { formatRating } from "@/lib/utils";
+import { SmartImage } from "@/components/SmartImage";
+import { venueCover, venueFallback, placeholderFor } from "@/lib/photos";
 
 function isNew(iso: string) {
   return Date.now() - new Date(iso).getTime() < 14 * 86_400_000;
@@ -21,7 +23,6 @@ export function VenueCard({
   const locSlug = venue.location?.slug ?? "";
   const catSlug = venue.category?.slug ?? "";
   const href = `/${locSlug}/${catSlug}/${venue.slug}`;
-  const img = venue.cover_image_url || venue.photos?.[0] || "/placeholder-venue.svg";
   const hot = venue.avg_rating >= 4.7;
   const fresh = isNew(venue.created_at);
 
@@ -32,12 +33,10 @@ export function VenueCard({
         className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white"
       >
         <div className="img-shimmer relative aspect-[4/3] overflow-hidden">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={img}
+          <SmartImage
+            sources={[venueCover(venue, 600), venueFallback(venue), placeholderFor(venue)]}
             alt={venue.name}
             loading={priority ? "eager" : "lazy"}
-            decoding="async"
             className="absolute inset-0 h-full w-full object-cover transition duration-700 ease-out group-hover:scale-110"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900/70 via-slate-900/0 to-transparent opacity-80 transition group-hover:opacity-95" />

@@ -14,9 +14,11 @@ function Script({ data }: { data: object }) {
 export function VenueJsonLd({
   venue,
   reviews,
+  image,
 }: {
   venue: Venue;
   reviews: Review[];
+  image?: string;
 }) {
   const base = getBaseUrl();
   const url = `${base}/${venue.location?.slug}/${venue.category?.slug}/${venue.slug}`;
@@ -29,7 +31,7 @@ export function VenueJsonLd({
     ...(venue.address && { address: venue.address }),
     ...(venue.phone && { telephone: venue.phone }),
     ...(venue.website && { sameAs: venue.website }),
-    ...(venue.cover_image_url && { image: venue.cover_image_url }),
+    ...(image && !image.includes("/api/placeholder") && { image }),
     ...(venue.description && { description: venue.description }),
     ...(venue.lat &&
       venue.lng && {

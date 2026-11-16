@@ -22,6 +22,8 @@ import { CountUp } from "@/components/fx/CountUp";
 import { Reveal } from "@/components/fx/Reveal";
 import { TiltCard } from "@/components/fx/TiltCard";
 import { getCategories, getLocations, getSiteStats, getVenues } from "@/lib/queries";
+import { getLocationBanner } from "@/lib/unsplash";
+import { venueCover } from "@/lib/photos";
 
 const ICONS: Record<string, React.ReactNode> = {
   restaurants: <Utensils size={24} />,
@@ -47,6 +49,7 @@ export default async function Home() {
   ]);
 
   const totalReviews = stats.reviews + stats.googleReviews;
+  const banners = await Promise.all(locations.map((l) => getLocationBanner(l.slug, l.name)));
 
   return (
     <div>
@@ -126,8 +129,10 @@ export default async function Home() {
         <section className="mt-14 grid gap-5 sm:grid-cols-2">
           {locations.map((l, i) => {
             const art = LOCATION_ART[l.slug] ?? "from-slate-800 to-slate-600";
+            const banner = banners[i];
             const cover = topRated.find((v) => v.location?.slug === l.slug);
-            const img = cover?.cover_image_url || cover?.photos?.[0];
+            const coverImg = cover ? venueCover(cover, 1200) : null;
+            const img = banner?.url ?? (coverImg && !coverImg.startsWith("/api/placeholder") ? coverImg : null);
             return (
               <Reveal key={l.id} delay={i * 120}>
                 <TiltCard max={5}>
@@ -145,6 +150,11 @@ export default async function Home() {
                       />
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent" />
+                    {banner && (
+                      <span className="absolute bottom-2 right-3 text-[10px] text-white/60">
+                        Photo: {banner.photographer} / Unsplash
+                      </span>
+                    )}
                     <div className="relative">
                       <p className="text-xs font-semibold uppercase tracking-widest text-white/70">
                         Explore

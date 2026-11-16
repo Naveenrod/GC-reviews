@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { searchPlaces } from "@/lib/google-places";
+import { searchPlaces, type PlaceResult } from "@/lib/google-places";
+import { fetchOgImage, mapLimit } from "@/lib/og-image";
 import { slugify } from "@/lib/utils";
 
 async function assertAdmin() {
@@ -19,6 +20,8 @@ async function assertAdmin() {
 
 // POST { action: "search", locationSlug, categorySlug, keyword? }
 //      { action: "import", locationSlug, categorySlug, places: PlaceResult[] }
+export const maxDuration = 60;
+
 export async function POST(req: Request) {
   const { ok, sb } = await assertAdmin();
   if (!ok) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
@@ -47,18 +50,22 @@ export async function POST(req: Request) {
     try {
       const results = await searchPlaces(query);
       return NextResponse.json({ results });
-    } catch (e: any) {
-      return NextResponse.json({ error: e.message }, { status: 500 });
+    } catch (e) {
+      return NextResponse.json({ error: e instanceof Error ? e.message : String(e) }, { status: 500 });
     }
   }
 
   if (action === "import") {
-    const places = body.places as any[];
+    const places = body.places as PlaceResult[];
     if (!Array.isArray(places) || places.length === 0) {
       return NextResponse.json({ error: "No places provided" }, { status: 400 });
     }
 
-    const rows = places.map((p) => ({
+    // Free photo source: the venue's own website hero image.
+    const ogImages = await mapLimit(places, 8, (p) => fetchOgImage(p.website));
+    const checkedAt = new Date().toISOString();
+
+    const rows = places.map((p, i) => ({
       google_place_id: p.google_place_id,
       name: p.name,
       slug: slugify(p.name),
@@ -71,14 +78,29 @@ export async function POST(req: Request) {
       booking_url: p.website,
       cover_image_url: p.photos?.[0] ?? null,
       photos: p.photos ?? [],
+      og_image_url: ogImages[i],
+      og_checked_at: checkedAt,
       lat: p.lat,
       lng: p.lng,
       avg_rating: p.google_rating ?? 0,
     }));
 
-    const { error, count } = await sb
+    let { error, count } = await sb
       .from("venues")
       .upsert(rows, { onConflict: "google_place_id", count: "exact" });
+
+    // If migration_photos.sql hasn't been run yet, import without the og columns.
+    if (error && /og_(image_url|checked_at)/.test(error.message)) {
+      const legacy = rows.map((r) => {
+        const copy: Partial<typeof r> = { ...r };
+        delete copy.og_image_url;
+        delete copy.og_checked_at;
+        return copy;
+      });
+      ({ error, count } = await sb
+        .from("venues")
+        .upsert(legacy, { onConflict: "google_place_id", count: "exact" }));
+    }
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ imported: count ?? rows.length });
