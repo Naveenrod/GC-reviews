@@ -1,19 +1,27 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
-import { Download, Store, MessageSquare, Camera } from "lucide-react";
+import { Download, Store, MessageSquare, Camera, Flag } from "lucide-react";
 import { requireAdmin } from "@/lib/admin";
 import { PhotoBackfill } from "./PhotoBackfill";
 
 export default async function AdminDashboard() {
   const { supabase } = await requireAdmin();
 
-  const [{ count: venueCount }, { count: reviewCount }, { count: postCount }] =
-    await Promise.all([
-      supabase.from("venues").select("*", { count: "exact", head: true }),
-      supabase.from("reviews").select("*", { count: "exact", head: true }),
-      supabase.from("social_posts").select("*", { count: "exact", head: true }),
-    ]);
+  const [
+    { count: venueCount },
+    { count: reviewCount },
+    { count: postCount },
+    { count: openReports },
+  ] = await Promise.all([
+    supabase.from("venues").select("*", { count: "exact", head: true }),
+    supabase.from("reviews").select("*", { count: "exact", head: true }),
+    supabase.from("social_posts").select("*", { count: "exact", head: true }),
+    supabase
+      .from("review_reports")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "open"),
+  ]);
 
   const cards = [
     {
@@ -39,6 +47,12 @@ export default async function AdminDashboard() {
       icon: <Camera size={22} />,
       title: "Instagram posting",
       desc: `${postCount ?? 0} posts`,
+    },
+    {
+      href: "/admin/reports",
+      icon: <Flag size={22} />,
+      title: "Review reports",
+      desc: `${openReports ?? 0} open · 7-day deadline`,
     },
   ];
 

@@ -11,6 +11,7 @@ import { ItemListJsonLd, BreadcrumbJsonLd } from "@/components/JsonLd";
 import { formatRating } from "@/lib/utils";
 import { SmartImage } from "@/components/SmartImage";
 import { venueCover, venueFallback, placeholderFor } from "@/lib/photos";
+import { PoweredByGoogle } from "@/components/GoogleAttribution";
 
 export async function generateMetadata({
   params,
@@ -121,7 +122,7 @@ export default async function GuidePage({
                         {formatRating(v.avg_rating)}
                       </span>
                       <span className="text-sm text-slate-400">
-                        ({v.review_count})
+                        ({v.review_count} member review{v.review_count !== 1 ? "s" : ""})
                       </span>
                     </div>
                     {v.description && (
@@ -153,6 +154,11 @@ export default async function GuidePage({
             );
           })}
         </ol>
+      )}
+      {venues.length > 0 && (
+        <div className="mt-3 text-right">
+          <PoweredByGoogle />
+        </div>
       )}
     </article>
   );

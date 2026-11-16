@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { StarInput } from "@/components/StarInput";
 import { burstConfetti } from "@/lib/confetti";
 import { resizeImage } from "@/lib/resize-image";
+import { MIN_AGE } from "@/lib/site";
 import type { User } from "@supabase/supabase-js";
 
 const MAX = 1000;
@@ -136,7 +137,8 @@ export function ReviewForm({ venueId, venueName }: { venueId: string; venueName:
         </span>
         <p className="text-lg font-semibold text-slate-800">Been to {venueName}?</p>
         <p className="mt-1 text-sm text-slate-500">
-          Your review helps locals and visitors find their next favourite spot.
+          Your review helps locals and visitors find their next favourite spot. You must be{" "}
+          {MIN_AGE} or older to post.
         </p>
         <Link
           href="/auth"
@@ -238,6 +240,13 @@ export function ReviewForm({ venueId, venueName }: { venueId: string; venueName:
         </p>
       </div>
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      <p className="mt-3 text-xs text-slate-500">
+        By posting you confirm you are {MIN_AGE} or older, that this reflects your own genuine
+        experience, and you agree to our{" "}
+        <Link href="/terms" className="underline hover:text-brand">Terms of Use</Link> and{" "}
+        <Link href="/review-policy" className="underline hover:text-brand">Review Policy</Link>,
+        including the licence you grant us to publish your review and photos.
+      </p>
       <button
         ref={submitRef}
         type="submit"

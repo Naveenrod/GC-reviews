@@ -21,22 +21,12 @@ import { ReviewForm } from "@/components/ReviewForm";
 import { Gallery } from "@/components/Gallery";
 import { RatingBreakdown } from "@/components/RatingBreakdown";
 import { ShareButton } from "@/components/fx/ShareButton";
-import { Reveal } from "@/components/fx/Reveal";
 import { VenueJsonLd, BreadcrumbJsonLd } from "@/components/JsonLd";
+import { PoweredByGoogle, PhotoCredits } from "@/components/GoogleAttribution";
 import { formatRating } from "@/lib/utils";
-import { venueCover, venueGallery, placeholderFor, absoluteUrl } from "@/lib/photos";
+import { venueCover, venueGallery, placeholderFor, absoluteUrl, proxiedGooglePhoto } from "@/lib/photos";
 import { getBaseUrl } from "@/lib/site";
 import type { Review } from "@/lib/types";
-
-type GoogleReview = {
-  id: string;
-  author_name: string;
-  author_photo: string | null;
-  author_url: string | null;
-  rating: number;
-  text: string | null;
-  published_at: string | null;
-};
 
 export async function generateMetadata({
   params,
@@ -82,19 +72,13 @@ export default async function VenuePage({
   if (!venue) notFound();
 
   const sb = await createClient();
-  const [{ data: reviews }, { data: googleReviews }] = await Promise.all([
-    sb
-      .from("reviews")
-      .select("*, profile:profiles(*)")
-      .eq("venue_id", venue.id)
-      .order("created_at", { ascending: false }),
-    sb
-      .from("google_reviews")
-      .select("*")
-      .eq("venue_id", venue.id)
-      .order("published_at", { ascending: false }),
-  ]);
-
+  // Only member reviews are stored and shown. Google user reviews are not cached:
+  // the Google Maps Platform terms do not allow storing them.
+  const { data: reviews } = await sb
+    .from("reviews")
+    .select("*, profile:profiles(*)")
+    .eq("venue_id", venue.id)
+    .order("created_at", { ascending: false });
 
   const bookingUrl = venue.booking_url || venue.website;
   const reviewList = (reviews as Review[]) ?? [];
@@ -104,9 +88,23 @@ export default async function VenuePage({
   if (venue.og_image_url) credits[venue.og_image_url] = "From the venue's website";
   for (const r of reviewList)
     for (const ph of r.photos ?? []) credits[ph] = `Photo by ${r.profile?.display_name ?? "a member"}`;
-  for (const g of gallery) if (g.startsWith("/api/photo/")) credits[g] = "Photo via Google";
-  const gReviews = (googleReviews as GoogleReview[]) ?? [];
-  const allRatings = [...reviewList.map((r) => r.rating), ...gReviews.map((r) => r.rating)];
+  // Google Places policies: credit each Google photo to its author.
+  const googlePhotos = venue.photos ?? [];
+  const attributions = venue.photo_attributions ?? [];
+  const shownGoogleCredits: { name: string; uri: string | null }[] = [];
+  googlePhotos.forEach((name, i) => {
+    const url = proxiedGooglePhoto(name, 1200);
+    if (!url || !gallery.includes(url)) return;
+    const a = attributions[i];
+    credits[url] = a?.name ? `Photo by ${a.name} via Google` : "Photo via Google";
+    if (a?.name) shownGoogleCredits.push(a);
+  });
+  const coverUrl = proxiedGooglePhoto(venue.cover_image_url, 1200);
+  if (coverUrl && gallery.includes(coverUrl) && !credits[coverUrl]) {
+    credits[coverUrl] = attributions[0]?.name ? `Photo by ${attributions[0].name} via Google` : "Photo via Google";
+  }
+  // Rating breakdown is member ratings only. Google's rating is shown separately.
+  const allRatings = reviewList.map((r) => r.rating);
   const mapsUrl =
     venue.lat && venue.lng
       ? `https://www.google.com/maps/dir/?api=1&destination=${venue.lat},${venue.lng}`
@@ -153,6 +151,10 @@ export default async function VenuePage({
       </nav>
 
       <Gallery photos={gallery} alt={venue.name} fallback={placeholderFor(venue)} credits={credits} />
+      <div className="flex flex-wrap items-end justify-between gap-2">
+        <PhotoCredits attributions={shownGoogleCredits} count={shownGoogleCredits.length} />
+        <PoweredByGoogle className="mt-2" />
+      </div>
 
       {/* header */}
       <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -164,15 +166,16 @@ export default async function VenuePage({
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <StarRating value={venue.avg_rating} size={18} />
             <span className="font-semibold text-slate-800">{formatRating(venue.avg_rating)}</span>
-            {venue.review_count > 0 && (
-              <span className="text-slate-500">
-                {venue.review_count} member review{venue.review_count !== 1 ? "s" : ""}
-              </span>
-            )}
-            {gReviews.length > 0 && (
-              <span className="text-slate-500">
-                {venue.review_count > 0 && <span aria-hidden className="mr-2">·</span>}
-                {gReviews.length} Google review{gReviews.length !== 1 ? "s" : ""}
+            {/* ACCC guidance: show the number of reviews behind every rating. */}
+            <span className="text-slate-500">
+              {venue.review_count > 0
+                ? `${venue.review_count} member review${venue.review_count !== 1 ? "s" : ""}`
+                : "no member reviews yet"}
+            </span>
+            {venue.google_rating != null && (
+              <span className="text-sm text-slate-400">
+                <span aria-hidden className="mr-2">·</span>
+                {venue.google_rating.toFixed(1)} on Google
               </span>
             )}
           </div>
@@ -196,7 +199,10 @@ export default async function VenuePage({
       <div className="mt-8 grid gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2">
           {venue.description && (
-            <p className="mb-6 text-lg leading-relaxed text-slate-600">{venue.description}</p>
+            <div className="mb-6">
+              <p className="text-lg leading-relaxed text-slate-600">{venue.description}</p>
+              <p className="mt-1 text-xs text-slate-400">Summary via Google.</p>
+            </div>
           )}
 
           <h2 className="mb-4 text-xl font-bold">
@@ -209,74 +215,6 @@ export default async function VenuePage({
             <ReviewForm venueId={venue.id} venueName={venue.name} />
           </div>
           <ReviewList reviews={reviewList} />
-
-          {gReviews.length > 0 && (
-            <div className="mt-10">
-              <h2 className="mb-4 text-xl font-bold">
-                What Google says
-                <span className="ml-2 text-base font-normal text-slate-500">({gReviews.length})</span>
-              </h2>
-              <div className="space-y-4">
-                {gReviews.map((r, i) => (
-                  <Reveal key={r.id} delay={(i % 3) * 60}>
-                    <div className="rounded-2xl border border-slate-200 bg-white p-4 transition hover:border-brand/40">
-                      <div className="flex items-center gap-3">
-                        {r.author_photo ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={r.author_photo}
-                            alt=""
-                            loading="lazy"
-                            className="h-9 w-9 rounded-full object-cover"
-                          />
-                        ) : (
-                          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-sm font-semibold text-slate-600">
-                            {r.author_name?.[0] ?? "?"}
-                          </span>
-                        )}
-                        <div>
-                          <a
-                            href={r.author_url ?? "#"}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="font-medium text-slate-800 hover:text-brand"
-                          >
-                            {r.author_name}
-                          </a>
-                          <div className="flex items-center gap-1 text-sm text-slate-500">
-                            <StarRating value={r.rating} size={13} />
-                            {r.published_at && (
-                              <span className="ml-1">
-                                ·{" "}
-                                {new Date(r.published_at).toLocaleDateString("en-AU", {
-                                  month: "short",
-                                  year: "numeric",
-                                })}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      {r.text && (
-                        <p className="mt-3 text-sm leading-relaxed text-slate-600">{r.text}</p>
-                      )}
-                    </div>
-                  </Reveal>
-                ))}
-              </div>
-              <p className="mt-4 text-xs text-slate-500">
-                Reviews sourced from{" "}
-                <a
-                  href="https://maps.google.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline hover:text-slate-700"
-                >
-                  Google Maps
-                </a>
-              </p>
-            </div>
-          )}
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">

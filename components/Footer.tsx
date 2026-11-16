@@ -36,14 +36,21 @@ export function Footer() {
           </ul>
         </div>
         <div>
-          <h4 className="mb-3 font-semibold text-slate-800">Coming soon</h4>
-          <p className="text-sm text-slate-500">
-            Sydney, Melbourne, Perth and more across Australia.
-          </p>
+          <h4 className="mb-3 font-semibold text-slate-800">Legal</h4>
+          <ul className="space-y-2 text-sm text-slate-500">
+            <li><Link href="/terms" className="hover:text-brand">Terms of Use</Link></li>
+            <li><Link href="/privacy" className="hover:text-brand">Privacy Policy</Link></li>
+            <li><Link href="/review-policy" className="hover:text-brand">Review &amp; Moderation Policy</Link></li>
+            <li><Link href="/report" className="hover:text-brand">Report a review</Link></li>
+          </ul>
         </div>
       </div>
-      <div className="border-t border-slate-200 py-4 text-center text-sm text-slate-400">
-        © {new Date().getFullYear()} GC Reviews. All rights reserved.
+      <div className="border-t border-slate-200 px-4 py-4 text-center text-sm text-slate-400">
+        <p>© {new Date().getFullYear()} GC Reviews. All rights reserved.</p>
+        <p className="mt-1 text-xs">
+          Venue listings and summaries are provided by Google. Ratings marked
+          &ldquo;member&rdquo; come from GC Reviews members only. You must be 16 or older to post.
+        </p>
       </div>
     </footer>
   );

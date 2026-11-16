@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { searchPlaces, SearchLimitError, type PlaceResult } from "@/lib/google-places";
+import { searchPlaces, SearchLimitError, venueRowFromPlace, type PlaceResult } from "@/lib/google-places";
 import { createServiceClient } from "@/lib/supabase/server";
 
 // Google gives 1,000 free Text Search requests a month for the tier this import
@@ -99,41 +99,45 @@ export async function POST(req: Request) {
     const ogImages = await mapLimit(places, 8, (p) => fetchOgImage(p.website));
     const checkedAt = new Date().toISOString();
 
+    // Google content goes through venueRowFromPlace, which stamps google_synced_at
+    // (start of the 30-day cache window) and writes Google's rating to google_rating.
+    // avg_rating is member reviews only and is never seeded from Google.
     const rows = places.map((p, i) => ({
       google_place_id: p.google_place_id,
-      name: p.name,
       slug: slugify(p.name),
       category_id: cat.id,
       location_id: loc.id,
-      description: p.description,
-      address: p.address,
-      phone: p.phone,
-      website: p.website,
       booking_url: p.website,
-      cover_image_url: p.photos?.[0] ?? null,
-      photos: p.photos ?? [],
       og_image_url: ogImages[i],
       og_checked_at: checkedAt,
-      lat: p.lat,
-      lng: p.lng,
-      avg_rating: p.google_rating ?? 0,
+      ...venueRowFromPlace({ ...p, photo_attributions: p.photo_attributions ?? [] }),
     }));
 
+    // Columns added by later migrations. If one hasn't been run yet, drop that column
+    // and retry so an import never fails on an optional field.
+    const OPTIONAL = new Set([
+      "og_image_url",
+      "og_checked_at",
+      "photo_attributions",
+      "google_rating",
+      "google_synced_at",
+    ]);
+    let pending: Record<string, unknown>[] = rows;
     let { error, count } = await sb
       .from("venues")
-      .upsert(rows, { onConflict: "google_place_id", count: "exact" });
-
-    // If migration_photos.sql hasn't been run yet, import without the og columns.
-    if (error && /og_(image_url|checked_at)/.test(error.message)) {
-      const legacy = rows.map((r) => {
-        const copy: Partial<typeof r> = { ...r };
-        delete copy.og_image_url;
-        delete copy.og_checked_at;
+      .upsert(pending, { onConflict: "google_place_id", count: "exact" });
+    for (let attempt = 0; error && attempt < OPTIONAL.size; attempt++) {
+      const m = /'(\w+)' column/.exec(error.message);
+      if (!m || !OPTIONAL.has(m[1])) break;
+      const col = m[1];
+      pending = pending.map((r) => {
+        const copy = { ...r };
+        delete copy[col];
         return copy;
       });
       ({ error, count } = await sb
         .from("venues")
-        .upsert(legacy, { onConflict: "google_place_id", count: "exact" }));
+        .upsert(pending, { onConflict: "google_place_id", count: "exact" }));
     }
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });

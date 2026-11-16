@@ -81,12 +81,18 @@ export function VenueCard({
           )}
           <div className="mt-auto flex items-center gap-2 pt-2">
             <StarRating value={venue.avg_rating} />
+            {/* ACCC guidance: always show how many reviews sit behind a rating. */}
             {venue.review_count > 0 ? (
               <span className="whitespace-nowrap text-xs text-slate-500">
-                {venue.review_count} review{venue.review_count !== 1 ? "s" : ""}
+                {venue.review_count} member review{venue.review_count !== 1 ? "s" : ""}
               </span>
             ) : (
-              <span className="whitespace-nowrap text-xs text-slate-400">Be the first</span>
+              <span className="whitespace-nowrap text-xs text-slate-400">No member reviews yet</span>
+            )}
+            {venue.google_rating != null && (
+              <span className="ml-auto whitespace-nowrap text-[11px] text-slate-400">
+                {venue.google_rating.toFixed(1)} on Google
+              </span>
             )}
           </div>
         </div>

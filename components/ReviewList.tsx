@@ -1,4 +1,5 @@
-import { User as UserIcon } from "lucide-react";
+import Link from "next/link";
+import { User as UserIcon, Flag } from "lucide-react";
 import type { Review } from "@/lib/types";
 import { StarRating } from "@/components/StarRating";
 import { timeAgo } from "@/lib/utils";
@@ -56,6 +57,16 @@ export function ReviewList({ reviews }: { reviews: Review[] }) {
               ))}
             </div>
           )}
+          {/* Complaints mechanism: every review can be reported. See /review-policy. */}
+          <div className="mt-3 flex justify-end">
+            <Link
+              href={`/report?review=${r.id}`}
+              rel="nofollow"
+              className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-red-600"
+            >
+              <Flag size={12} /> Report this review
+            </Link>
+          </div>
         </div>
       ))}
     </div>

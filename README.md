@@ -12,7 +12,11 @@ Discover, review and book the best restaurants, hotels and entertainment across 
 
 ### 1. Supabase
 1. Create a project at [supabase.com](https://supabase.com).
-2. Open the **SQL Editor** and run the contents of [`supabase/migration.sql`](supabase/migration.sql). This creates all tables, RLS policies, triggers, and seeds the Gold Coast / Brisbane locations + categories.
+2. Open the **SQL Editor** and run, in order:
+   - [`supabase/migration.sql`](supabase/migration.sql): all tables, RLS policies, triggers, and the Gold Coast / Brisbane seed.
+   - [`supabase/migration_social.sql`](supabase/migration_social.sql): Instagram auto-posting tables.
+   - [`supabase/migration_photos.sql`](supabase/migration_photos.sql): photo pipeline and the monthly Google budget counter.
+   - [`supabase/migration_legal.sql`](supabase/migration_legal.sql): review reports (complaints mechanism), Google content bookkeeping, and separation of Google's rating from member ratings.
 3. Enable **Google** as an auth provider: Authentication → Providers → Google (add your Google OAuth client ID/secret).
 4. Add the redirect URL `http://localhost:3000/auth/callback` (and your production URL) under Authentication → URL Configuration.
 
@@ -27,8 +31,12 @@ UNSPLASH_ACCESS_KEY=...             # optional — free location banners (unspla
 GOOGLE_SEARCH_MONTHLY_LIMIT=900     # optional — admin import stops here, inside Google's 1,000 free
 # NEXT_PUBLIC_GOOGLE_PHOTOS=on      # NOT recommended — turns paid Google photos back on
 # PHOTO_MONTHLY_BUDGET=900          # only used when Google photos are on
+GOOGLE_DETAILS_MONTHLY_LIMIT=900    # optional — daily Google content refresh stops here, inside the free allowance
+CRON_SECRET=...                     # any long random string; Vercel sends it to cron routes
+NEXT_PUBLIC_SITE_URL=...            # production URL, e.g. https://example.com
+NEXT_PUBLIC_LEGAL_ENTITY=...        # shown in Terms/Privacy, e.g. "Example Pty Ltd (ABN 12 345 678 901) trading as GC Reviews"
+NEXT_PUBLIC_CONTACT_EMAIL=...       # legal/privacy/takedown contact; pages fall back to the Report form if unset
 ```
-Also run [`supabase/migration_photos.sql`](supabase/migration_photos.sql) in the SQL editor to enable the photo pipeline below.
 
 ### 3. Run
 ```bash
@@ -53,11 +61,25 @@ Then visit `/admin` → **Import venues** to pull real Gold Coast / Brisbane lis
 - **Expansion**: add a row to the `locations` table and re-run the import for a new city.
 
 ## Google costs
-The public site makes **no** Google API calls. Google is only used when an admin
-clicks **Fetch from Google** on the import page, and that stops automatically at
-`GOOGLE_SEARCH_MONTHLY_LIMIT` requests a month, inside Google's free allowance.
-The monthly cron no longer calls Google. (The map on venue pages is Google's free
-keyless embed.)
+The public site makes **no** Google API calls. Google is used in two places, both
+capped inside Google's free allowance:
+
+- **Admin import**: **Fetch from Google** on the import page stops at
+  `GOOGLE_SEARCH_MONTHLY_LIMIT` Text Search requests a month.
+- **Daily refresh cron**: `/api/cron/refresh-venues` re-fetches Place Details for
+  venues whose Google content is older than 25 days, oldest first, and stops at
+  `GOOGLE_DETAILS_MONTHLY_LIMIT` requests a month. This is what keeps the site
+  inside the Google Maps Platform 30-day caching limit (see below).
+
+The map on venue pages is Google's free keyless embed.
+
+## Legal and compliance
+- **Pages:** `/terms`, `/privacy`, `/review-policy`, `/report`. Update `POLICIES_UPDATED` in `lib/site.ts` when you change them. Fill in `NEXT_PUBLIC_LEGAL_ENTITY` and `NEXT_PUBLIC_CONTACT_EMAIL`.
+- **Reports:** every review has a "Report this review" link. Reports land in `review_reports` with a 7-day `due_at` and are worked from `/admin/reports`. The procedure is in [`docs/TAKEDOWN-PROCEDURE.md`](docs/TAKEDOWN-PROCEDURE.md). Check the queue daily.
+- **Google content:** place IDs are stored permanently. Everything else from Google (name, address, phone, website, coordinates, summary, photo names, Google rating) is a cache. The daily cron refreshes it within the monthly budget and purges the summary, photos and Google rating from any venue older than 30 days that could not be refreshed; the listing stays, and the content comes back when the refresh reaches it. The first run after `migration_legal.sql` will clear Google content on venues imported more than 30 days ago that the day's budget cannot cover. "Powered by Google" attribution and per-photo author credits render wherever that content appears.
+- **Ratings:** `avg_rating` is member reviews only. Google's rating is stored in `google_rating` and shown separately, labelled "on Google". Never seed one from the other.
+- **Age:** members must be 16 or older to post, matching Instagram's Australian minimum.
+- **Crons:** Vercel's Hobby plan allows two cron jobs, both of which are used (venue refresh, Instagram). Upgrade before adding more.
 
 ## Photos (free-first pipeline)
 Each venue image is picked from the first source that works:

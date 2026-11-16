@@ -3,6 +3,7 @@ import { Compass } from "lucide-react";
 import type { Venue } from "@/lib/types";
 import { VenueCard } from "@/components/VenueCard";
 import { Reveal } from "@/components/fx/Reveal";
+import { PoweredByGoogle } from "@/components/GoogleAttribution";
 
 export function VenueGrid({
   venues,
@@ -31,12 +32,18 @@ export function VenueGrid({
     );
   }
   return (
-    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {venues.map((v, i) => (
-        <Reveal key={v.id} delay={(i % 4) * 70} className="h-full">
-          <VenueCard venue={v} rank={ranked ? i + 1 : undefined} priority={i < 4} />
-        </Reveal>
-      ))}
+    <div>
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {venues.map((v, i) => (
+          <Reveal key={v.id} delay={(i % 4) * 70} className="h-full">
+            <VenueCard venue={v} rank={ranked ? i + 1 : undefined} priority={i < 4} />
+          </Reveal>
+        ))}
+      </div>
+      {/* Venue names, addresses and summaries are Google Places content. */}
+      <div className="mt-3 text-right">
+        <PoweredByGoogle />
+      </div>
     </div>
   );
 }
