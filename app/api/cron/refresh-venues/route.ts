@@ -1,7 +1,7 @@
 // Daily job (see vercel.json). Two passes:
 //
-// 1. Free website photos: look for og:image on venue websites for venues that have
-//    no photo yet, retrying monthly. No Google calls.
+// 1. Free website photos: look for a photo on venue websites for venues that have
+//    none yet, retrying monthly, and copy it onto our own storage. No Google calls.
 //
 // 2. Google content cache: the Google Maps Platform terms allow Places content
 //    (other than place IDs) to be cached for at most 30 days. Venues whose Google
@@ -14,6 +14,7 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { fetchOgImage, mapLimit } from "@/lib/og-image";
+import { resolveVenuePhoto } from "@/lib/host-photo";
 import { fetchPlace, venueRowFromPlace, EXPIRED_GOOGLE_CONTENT } from "@/lib/google-places";
 import { PLACES_MAX_CACHE_DAYS, PLACES_REFRESH_AFTER_DAYS } from "@/lib/site";
 
@@ -52,11 +53,11 @@ export async function GET(req: Request) {
 
   let ogFound = 0;
   await mapLimit(ogVenues ?? [], 8, async (v: { id: string; website: string }) => {
-    const og = await fetchOgImage(v.website);
-    if (og) ogFound++;
+    const photo = await resolveVenuePhoto(sb, v.id, await fetchOgImage(v.website));
+    if (photo) ogFound++;
     await sb
       .from("venues")
-      .update({ og_image_url: og, og_checked_at: new Date().toISOString() })
+      .update({ og_image_url: photo, og_checked_at: new Date().toISOString() })
       .eq("id", v.id);
   });
 

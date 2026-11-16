@@ -86,8 +86,12 @@ Each venue image is picked from the first source that works:
 
 1. **Venue website image** (`og_image_url`) — the venue's own photo, read from its
    website (share image, schema.org data, or the first large photo) on import, on
-   the monthly cron, or via **Admin → Find website photos**. Free. Running it again
+   the monthly cron, or via **Admin → Find & copy photos**. Free. Running it again
    retries venues that still have no photo.
+   Found photos are **copied onto our own storage** (Supabase bucket `venue-photos`,
+   created automatically, resized to max 1200px) and served from `/api/img/...`, which
+   Vercel's CDN caches for a year. So images keep working if the venue's site changes,
+   and Supabase's free bandwidth is only touched on a cache miss.
 2. **Member photos** — reviewers can attach up to 4 photos. They're resized in the
    browser and stored in the public `review-photos` Supabase Storage bucket. Free tier: 1 GB.
 3. **Google Places photo** — off by default because it is paid. Only the photo
