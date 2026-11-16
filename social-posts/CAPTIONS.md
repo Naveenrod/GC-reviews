@@ -86,3 +86,108 @@ Upload under Edit profile → Change photo. Designed to survive the circular cro
 GC Reviews | Gold Coast & Brisbane
 Honest reviews of restaurants, hotels & things to do 🍽️🏨🎟️
 Read it. Rate it. Book it. 👇
+
+---
+---
+
+# Week 2 — four more posts
+
+Post one per day. Alternate Gold Coast and Brisbane so both audiences see themselves.
+Reply to every comment in the first hour. Repost good comments to your Story.
+
+---
+
+## Post 4 — Brisbane poll (single image: `04-poll-valley-vs-westend.png`)
+
+**Caption**
+
+Brisbane, your turn. Drinks tonight: Fortitude Valley or West End? 🍸
+
+Team Valley 🌃 says: more bars per block than anywhere in Queensland, and the night doesn't have to end at 11.
+Team West End 🌿 says: better beer, better music, and you can actually hear your friends.
+
+Comment VALLEY or WEST END and name the one bar that proves your point. The winning suburb gets a full "best bars" guide on GC Reviews next week, built from your comments.
+
+🔗 Link in bio
+
+#brisbane #fortitudevalley #westend #brisbanebars #brisbanenightlife #brisbanedrinks #brisbanefood #brisbanelife #visitbrisbane #thisisqueensland #brisbaneeats #gcreviews
+
+**First comment**
+
+We'll start: a West End laneway at 9pm on a Friday is hard to beat. Change our mind. 👀
+
+**Also post as a Story** with the poll sticker: Valley / West End.
+
+---
+
+## Post 5 — Hotel tips carousel (6 slides: `05-hotel-tips-1of6.png` to `05-hotel-tips-6of6.png`)
+
+**Caption**
+
+Booking a Gold Coast hotel? Five things we wish someone had told us. Swipe →
+
+1️⃣ Read the last 10 reviews, not the average. The recent ten tell you what you'll actually get.
+2️⃣ "Ocean view" has a wide definition. Ask for the room category by name and check guest photos.
+3️⃣ Parking is rarely free. $25 to $50 a night in Surfers and Broadbeach. Or stay on the G:link line.
+4️⃣ Look for the extras at checkout. Resort fees, cleaning fees, late checkout fees.
+5️⃣ Pool or beach? Pick one. Beachfront means wind and sand. One street back usually means a better pool.
+
+Save this for your next trip, and send it to whoever is booking the group accommodation. 🔖
+
+Every Gold Coast hotel, rated by people who actually stayed: link in bio.
+
+#goldcoast #goldcoasthotels #surfersparadise #broadbeach #goldcoastholiday #goldcoasttravel #queenslandtravel #visitgoldcoast #australiatravel #staycation #traveltips #gcreviews
+
+**First comment**
+
+What's the one thing you always check before booking? Drop it below and we'll add the best ones to the guide.
+
+---
+
+## Post 6 — Tag a mate (single image: `06-tag-a-mate.png`)
+
+**Caption**
+
+Every group chat has one. The mate who has three restaurant suggestions ready before anyone else has even seen the message. 📱
+
+Tag them. They've been carrying the group for years and nobody has said thanks.
+
+(Also tag the one who says "I'm easy, anywhere's fine" and then vetoes everything. We see you too.)
+
+#goldcoast #brisbane #goldcoastfood #brisbanefood #goldcoasteats #brisbaneeats #groupchat #tagamate #foodies #goldcoastlife #brisbanelife #gcreviews
+
+**First comment**
+
+Picker mates: tell us your go-to. We'll review it.
+
+---
+
+## Post 7 — Trust promise (single image: `07-trust-promise.png`)
+
+**Caption**
+
+You've probably seen it happen. A place with 4.8 stars and 400 reviews that turns out to be… fine. Or a great little spot buried under one-star reviews from someone who never went.
+
+Here's how GC Reviews works:
+
+✅ No paid reviews, ever
+✅ Negative reviews stay up
+✅ Venues can't pay to hide, edit or reorder them
+✅ Think a review is fake? Report it. We decide within 7 days and tell you the outcome
+
+Our full review and moderation policy is public, in plain English, and linked in our bio. If we're not doing what it says, call us out.
+
+#goldcoast #brisbane #goldcoastfood #brisbanefood #honestreviews #goldcoastrestaurants #brisbanerestaurants #supportlocal #goldcoastlocal #brisbanelocal #queensland #gcreviews
+
+**First comment**
+
+What's the most obviously fake review you've ever spotted? No names needed, just the story. 👇
+
+---
+
+## Story ideas for the week (no new graphics needed)
+
+- Repost the best comment from each post with a "this one" sticker.
+- "Ask us anything" sticker: "Where should we review next?"
+- Screenshot the poll results from Post 4 and post a "Valley wins" or "West End wins" story.
+- A plain text story: "Left a review on GC Reviews this week? DM us a screenshot and we'll shout you out."
